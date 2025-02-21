@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 const { Pool } = require('pg');
 const helmet = require('helmet');
+import { rateLimit } from 'express-rate-limit'
 
 //Idiomatic expression in express to route and respond to a client request
 app.get('/', (req, res) => {        //get requests to the root ("/") will route here
@@ -15,9 +16,18 @@ app.get('/', (req, res) => {        //get requests to the root ("/") will route 
                                                         //the .sendFile method needs the absolute path to the file, see: https://expressjs.com/en/4x/api.html#res.sendFile 
 });
 
+const limiter = rateLimit({
+	windowMs: 15 * 60 * 1000, // 15 minutes
+	limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
+	standardHeaders: 'draft-8', // draft-6: `RateLimit-*` headers; draft-7 & draft-8: combined `RateLimit` header
+	legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
+	// store: ... , // Redis, Memcached, etc. See below.
+})
+
 dotenv.config();
 app.use(express.json());
 app.use(helmet());
+app.use(limiter);
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -40,17 +50,14 @@ app.get('/usuarios',async (req,res)=>{
     
     const email = req.body.email;
     const password=req.body.password;
-    //const email = req.params.email;
     console.log(email);
-    console.log(password)
+    console.log(password);
     console.log(req.body);
-    //console.log(req.params.email);
-    //const password=req.params.password;
   
     // Find the user in the database
     const result = await pool.query("SELECT * FROM usuarios WHERE email=$1", [email]);
     const user = result.rows[0];
-    console.log(user)
+    console.log(user);
     if (user==0) {
       return res.status(400).json({ message: 'Invalid email or password ' });
     }
