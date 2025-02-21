@@ -7,6 +7,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 const { Pool } = require('pg');
+const helmet = require('helmet');
 
 //Idiomatic expression in express to route and respond to a client request
 app.get('/', (req, res) => {        //get requests to the root ("/") will route here
@@ -16,6 +17,7 @@ app.get('/', (req, res) => {        //get requests to the root ("/") will route 
 
 dotenv.config();
 app.use(express.json());
+app.use(helmet());
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -50,12 +52,9 @@ app.get('/usuarios',async (req,res)=>{
     const user = result.rows[0];
     console.log(user)
     if (user==0) {
-      return res.status(400).json({ message: 'Invalid email or password 2' });
+      return res.status(400).json({ message: 'Invalid email or password ' });
     }
-    // Compare the password with the hashed password
-    //if (!isMatch) {
-    //  return res.status(400).json({ message: 'Invalid email or password' });
-    //}
+    
   if(password==user.contrasena){
     // Create a JWT token
     const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
