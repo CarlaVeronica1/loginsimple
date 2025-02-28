@@ -45,6 +45,25 @@ app.get('/usuarios',async (req,res)=>{
     } 
   });
 
+ // Register a new user
+ app.post('/register', async (req, res) => {
+    const { email, password,empleado } = req.body;
+  
+    // Check if the email already exists
+    const result = await pool.query('SELECT * FROM usuarios WHERE email = $1', [email]);
+    if (result.rows.length > 0) {
+      return res.status(400).json({ message: 'Usuario ya existe' });
+    }
+  
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, process.env.SALT);
+  
+    // Insert the new user into the database
+    await pool.query('INSERT INTO usuarios (email, contasena,empleado) VALUES ($1, $2, $3)', [email, hashedPassword,empleado]);
+  
+    res.status(201).json({ message: 'User registered successfully' });
+  });
+
  // Login
  app.post('/login', async (req, res) => {
     
