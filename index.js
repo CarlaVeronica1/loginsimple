@@ -28,6 +28,7 @@ dotenv.config();
 app.use(express.json());
 app.use(helmet());
 app.use(limiter);
+app.use(cors());
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -45,7 +46,7 @@ app.get('/usuarios',async (req,res)=>{
     } 
   });
 
- // Register a new user
+ // Registrar un nuevo usuario
  app.post('/register', async (req, res) => {
     const { email, password,empleado } = req.body;
   
@@ -54,12 +55,12 @@ app.get('/usuarios',async (req,res)=>{
     if (result.rows.length > 0) {
       return res.status(400).json({ message: 'Usuario ya existe' });
     }
-  
-    // Hash the password
+  const intempleado=parseInt(empleado)
+    // Hasher la contraseña
     const hashedPassword = await bcrypt.hash(password, process.env.SALT);
   
-    // Insert the new user into the database
-    await pool.query('INSERT INTO usuarios (email, contasena,empleado) VALUES ($1, $2, $3)', [email, hashedPassword,empleado]);
+    // Insertar usuario nuevo a la base
+    await pool.query('INSERT INTO usuarios (email, contrasena,empleado) VALUES ($1, $2, $3)', [email, hashedPassword,intempleado]);
   
     res.status(201).json({ message: 'User registered successfully' });
   });
@@ -82,7 +83,7 @@ app.get('/usuarios',async (req,res)=>{
     }
     
   if(password==user.contrasena){
-    // Create a JWT token
+    // Crear un JWT token
     const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
       expiresIn: '1h',
     });
@@ -94,6 +95,8 @@ app.get('/usuarios',async (req,res)=>{
     
   });
 
-app.listen(port, () => {            //server starts listening for any attempts from a client to connect at port: {port}
+
+
+app.listen(port, () => {            //iniciar puerto
     console.log(`Now listening on port ${port}`); 
 });
