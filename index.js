@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 const { Pool } = require('pg');
 const helmet = require('helmet');
+const cors =require('cors')
 import { rateLimit } from 'express-rate-limit'
 
 //Idiomatic expression in express to route and respond to a client request
@@ -24,11 +25,14 @@ const limiter = rateLimit({
 	// store: ... , // Redis, Memcached, etc. See below.
 })
 
+
 dotenv.config();
 app.use(express.json());
 app.use(helmet());
 app.use(limiter);
 app.use(cors());
+//app.use(cors({ origin: 'https://your-allowed-origin.com' }));
+
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
